@@ -31,3 +31,27 @@ fun main(){
 }
 ```
 
+Collection of flow always happens in the context of the calling coroutine.
+The exception is when using the *flowOn* operator.
+
+For example:
+
+```kotlin
+    val flowA = flow{
+        for (i in 1..3) {
+            Thread.sleep(100) // pretend we are computing it in CPU-consuming way
+            println("Emitting $i")
+            emit(i) // emit next value
+        }
+    }.flowOn(Dispatchers.Default)
+
+    runBlocking {
+        flowA.collect{
+            println("Collected $it")
+        }
+    }
+
+```
+
+Everything upstream flowOn runs on the background thread from Dispatchers.Default
+And everything inside the runBlocking (the collect) runs on the main thread.
